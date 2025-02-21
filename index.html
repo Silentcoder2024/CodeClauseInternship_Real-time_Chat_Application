@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        #chat-box {
+            width: 60%;
+            max-width: 600px;
+            margin: auto;
+            height: 400px;
+            overflow-y: auto;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            text-align: left;
+        }
+
+        .message b {
+            color: #ffeb3b;
+        }
+
+        input {
+            width: 60%;
+            max-width: 400px;
+            padding: 10px;
+            border: 2px solid white;
+            border-radius: 5px;
+            margin: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            background: #ffeb3b;
+            color: black;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #fbc02d;
+        }
+
+        #send {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>💬Real-Time Chat</h2>
+    <div id="chat-box">
+        {% for msg in messages %}
+            <div class="message"><b>{{ msg.username }}</b>: {{ msg.text }}</div>
+        {% endfor %}
+    </div>
+    <br>
+    <input type="text" id="username" placeholder="Enter username">
+    <input type="text" id="message" placeholder="Type a message...">
+    <button id="send">Send</button>
+
+    <script>
+        var socket = io.connect("http://" + document.domain + ":" + location.port);
+
+        document.getElementById("send").onclick = function() {
+            var username = document.getElementById("username").value;
+            var text = document.getElementById("message").value;
+
+            if (username && text) {
+                socket.send({ "username": username, "text": text });
+                document.getElementById("message").value = "";
+            }
+        };
+
+        socket.on("message", function(data) {
+            var chatBox = document.getElementById("chat-box");
+            var messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.innerHTML = `<b>${data.username}</b>: ${data.text}`;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
+</body>
+</html>
